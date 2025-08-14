@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import communicationService from '../services/CommunicationService';
 
 const StaffContainer = styled.div`
   max-width: 1200px;
@@ -224,9 +225,7 @@ function StaffDisplay() {
   const [orders, setOrders] = useState([]);
   const [currentOrder, setCurrentOrder] = useState(null);
   const [currentOrderItems, setCurrentOrderItems] = useState([]);
-  const [isConnected, setIsConnected] = useState(false);
-  const [debugInfo, setDebugInfo] = useState('初始化中...');
-  const [broadcastChannel, setBroadcastChannel] = useState(null);
+  const [connectionStatus, setConnectionStatus] = useState({ isConnected: false, connectionType: null, debugInfo: '初始化中...' });
 
   const products = [
     { name: 'iPhone 15 Pro Max', price: 50000 },
@@ -246,57 +245,24 @@ function StaffDisplay() {
   ];
 
   useEffect(() => {
-    const initializeCommunication = () => {
-      if ('BroadcastChannel' in window) {
-        try {
-          const channel = new BroadcastChannel('pos_channel');
-          setBroadcastChannel(channel);
-          setIsConnected(true);
-          setDebugInfo('BroadcastChannel 已連接');
-        } catch (error) {
-          console.error('BroadcastChannel 初始化失敗:', error);
-          setDebugInfo('BroadcastChannel 失敗，使用 localStorage');
-          setIsConnected(true);
-        }
-      } else {
-        console.warn('BroadcastChannel 不支援，使用 localStorage');
-        setDebugInfo('BroadcastChannel 不支援，使用 localStorage');
-        setIsConnected(true);
-      }
+    // 監聽通訊服務狀態變化
+    const updateStatus = () => {
+      setConnectionStatus(communicationService.getStatus());
     };
 
-    initializeCommunication();
+    // 定期更新狀態
+    const statusInterval = setInterval(updateStatus, 1000);
+    
+    // 初始更新
+    updateStatus();
 
     return () => {
-      if (broadcastChannel) {
-        broadcastChannel.close();
-      }
+      clearInterval(statusInterval);
     };
   }, []);
 
-  const sendMessage = (type, order) => {
-    const message = { type, order };
-    
-    if (broadcastChannel) {
-      try {
-        broadcastChannel.postMessage(message);
-        setDebugInfo(`已發送 ${type} 訊息`);
-        console.log('已發送 BroadcastChannel 訊息:', message);
-      } catch (error) {
-        console.error('BroadcastChannel 發送失敗:', error);
-        setDebugInfo('BroadcastChannel 發送失敗');
-      }
-    } else {
-      // 備用方案：使用 localStorage
-      try {
-        localStorage.setItem('pos_currentOrder', JSON.stringify(order));
-        setDebugInfo(`已儲存到 localStorage: ${order ? order.number : '清除'}`);
-        console.log('已儲存到 localStorage:', order);
-      } catch (error) {
-        console.error('localStorage 儲存失敗:', error);
-        setDebugInfo('localStorage 儲存失敗');
-      }
-    }
+  const sendMessage = (type, data) => {
+    communicationService.sendMessage(type, data);
   };
 
   const addToOrder = (product) => {
@@ -352,11 +318,12 @@ function StaffDisplay() {
 
   return (
     <StaffContainer>
-      <ConnectionStatus connected={isConnected}>
-        {isConnected ? '已連接' : '未連接'}
+      <ConnectionStatus connected={connectionStatus.isConnected}>
+        {connectionStatus.isConnected ? '已連接' : '未連接'}
+        {connectionStatus.connectionType && ` (${connectionStatus.connectionType})`}
       </ConnectionStatus>
 
-      <DebugInfo>{debugInfo}</DebugInfo>
+      <DebugInfo>{connectionStatus.debugInfo}</DebugInfo>
 
       <Header>
         <HeaderTitle>營業員操作介面</HeaderTitle>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import communicationService from '../services/CommunicationService';
 
 const CustomerContainer = styled.div`
   max-width: 800px;
@@ -270,124 +271,65 @@ const ClosedSubtitle = styled.p`
 
 function CustomerDisplay() {
   const [currentOrder, setCurrentOrder] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState({ isConnected: false, connectionType: null, debugInfo: '初始化中...' });
   const [statusMessage, setStatusMessage] = useState('');
-  const [debugInfo, setDebugInfo] = useState('初始化中...');
   const [isClosed, setIsClosed] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
 
   useEffect(() => {
-    let broadcastChannel = null;
-    let localStorageInterval = null;
+    // 監聽通訊服務狀態變化
+    const updateStatus = () => {
+      setConnectionStatus(communicationService.getStatus());
+    };
 
-    const initializeCommunication = () => {
-      // 嘗試使用 BroadcastChannel
-      if ('BroadcastChannel' in window) {
-        try {
-          broadcastChannel = new BroadcastChannel('pos_channel');
-          setDebugInfo('使用 BroadcastChannel');
-          
-          broadcastChannel.onmessage = (event) => {
-            console.log('收到 BroadcastChannel 訊息:', event.data);
-            setDebugInfo(`收到訊息: ${event.data.type}`);
-            
-            const { type, order } = event.data;
-            
-            if (type === 'NEW_ORDER') {
-              setCurrentOrder(order);
-              setShowWelcome(false);
-              setIsClosed(false);
-              setStatusMessage(`新訂單已建立: ${order.number}`);
-              setTimeout(() => setStatusMessage(''), 3000);
-            } else if (type === 'SELECT_ORDER') {
-              setCurrentOrder(order);
-              setShowWelcome(false);
-              setIsClosed(false);
-              setStatusMessage(`已選擇訂單: ${order.number}`);
-              setTimeout(() => setStatusMessage(''), 3000);
-            } else if (type === 'BUILDING_ORDER') {
-              setCurrentOrder(order);
-              setShowWelcome(false);
-              setIsClosed(false);
-              setStatusMessage('正在建立訂單...');
-            } else if (type === 'CLEAR_ORDER') {
-              setCurrentOrder(null);
-              setShowWelcome(true);
-              setIsClosed(false);
-              setStatusMessage('訂單已清除');
-              setTimeout(() => setStatusMessage(''), 3000);
-            } else if (type === 'END_SESSION') {
-              setCurrentOrder(null);
-              setShowWelcome(false);
-              setIsClosed(true);
-              setStatusMessage('營業結束');
-              setTimeout(() => setStatusMessage(''), 5000);
-            }
-          };
-
-          setIsConnected(true);
-          setDebugInfo('BroadcastChannel 已連接');
-          
-        } catch (error) {
-          console.error('BroadcastChannel 初始化失敗:', error);
-          setDebugInfo('BroadcastChannel 失敗，使用 localStorage');
-          initializeLocalStorageFallback();
-        }
-      } else {
-        console.warn('BroadcastChannel 不支援，使用 localStorage 備用方案');
-        setDebugInfo('BroadcastChannel 不支援，使用 localStorage');
-        initializeLocalStorageFallback();
+    // 處理接收到的訊息
+    const handleMessage = (message) => {
+      const { type, data } = message;
+      
+      if (type === 'NEW_ORDER') {
+        setCurrentOrder(data);
+        setShowWelcome(false);
+        setIsClosed(false);
+        setStatusMessage(`新訂單已建立: ${data.number}`);
+        setTimeout(() => setStatusMessage(''), 3000);
+      } else if (type === 'SELECT_ORDER') {
+        setCurrentOrder(data);
+        setShowWelcome(false);
+        setIsClosed(false);
+        setStatusMessage(`已選擇訂單: ${data.number}`);
+        setTimeout(() => setStatusMessage(''), 3000);
+      } else if (type === 'BUILDING_ORDER') {
+        setCurrentOrder(data);
+        setShowWelcome(false);
+        setIsClosed(false);
+        setStatusMessage('正在建立訂單...');
+      } else if (type === 'CLEAR_ORDER') {
+        setCurrentOrder(null);
+        setShowWelcome(true);
+        setIsClosed(false);
+        setStatusMessage('訂單已清除');
+        setTimeout(() => setStatusMessage(''), 3000);
+      } else if (type === 'END_SESSION') {
+        setCurrentOrder(null);
+        setShowWelcome(false);
+        setIsClosed(true);
+        setStatusMessage('營業結束');
+        setTimeout(() => setStatusMessage(''), 5000);
       }
     };
 
-    const initializeLocalStorageFallback = () => {
-      // 備用方案：使用 localStorage
-      localStorageInterval = setInterval(() => {
-        try {
-          const storedOrder = localStorage.getItem('pos_currentOrder');
-          if (storedOrder) {
-            const order = JSON.parse(storedOrder);
-            if (order === null) {
-              // 清除訂單或結束營業
-              setCurrentOrder(null);
-              setShowWelcome(true);
-              setIsClosed(false);
-              setStatusMessage('訂單已清除');
-              setTimeout(() => setStatusMessage(''), 3000);
-            } else {
-              // 設置訂單
-              setCurrentOrder(order);
-              setShowWelcome(false);
-              setIsClosed(false);
-              if (order.isBuilding) {
-                setStatusMessage('正在建立訂單...');
-              } else {
-                setStatusMessage(`收到訂單: ${order.number}`);
-                setTimeout(() => setStatusMessage(''), 3000);
-              }
-            }
-            setDebugInfo(`從 localStorage 讀取: ${order ? order.number : '清除'}`);
-            localStorage.removeItem('pos_currentOrder');
-          }
-        } catch (error) {
-          console.error('localStorage 讀取失敗:', error);
-          setDebugInfo('localStorage 讀取失敗');
-        }
-      }, 1000);
+    // 添加訊息監聽器
+    communicationService.addListener(handleMessage);
 
-      setIsConnected(true);
-    };
+    // 定期更新狀態
+    const statusInterval = setInterval(updateStatus, 1000);
+    
+    // 初始更新
+    updateStatus();
 
-    initializeCommunication();
-
-    // 清理函數
     return () => {
-      if (broadcastChannel) {
-        broadcastChannel.close();
-      }
-      if (localStorageInterval) {
-        clearInterval(localStorageInterval);
-      }
+      clearInterval(statusInterval);
+      communicationService.removeListener(handleMessage);
     };
   }, []);
 
@@ -412,11 +354,12 @@ function CustomerDisplay() {
 
   return (
     <CustomerContainer>
-      <ConnectionStatus connected={isConnected}>
-        {isConnected ? '已連接' : '未連接'}
+      <ConnectionStatus connected={connectionStatus.isConnected}>
+        {connectionStatus.isConnected ? '已連接' : '未連接'}
+        {connectionStatus.connectionType && ` (${connectionStatus.connectionType})`}
       </ConnectionStatus>
 
-      <DebugInfo>{debugInfo}</DebugInfo>
+      <DebugInfo>{connectionStatus.debugInfo}</DebugInfo>
 
       <Header>
         <HeaderTitle>客戶顯示器</HeaderTitle>
@@ -500,15 +443,20 @@ function CustomerDisplay() {
 // 輔助函數：根據品項名稱獲取價格
 function getItemPrice(itemName) {
   const priceMap = {
-    '美式咖啡': 60,
-    '拿鐵咖啡': 80,
-    '卡布奇諾': 75,
-    '起司蛋糕': 90,
-    '提拉米蘇': 120,
-    '鬆餅': 80,
-    '布朗尼': 70,
-    '檸檬塔': 85,
-    '熱茶': 50,
+    'iPhone 15 Pro Max': 50000,
+    'iPhone 15 Pro': 45000,
+    'iPhone 15': 40000,
+    'iPhone 14 Pro Max': 35000,
+    'iPhone 14 Pro': 30000,
+    'iPhone 14': 25000,
+    'iPhone 13 Pro Max': 20000,
+    'iPhone 13 Pro': 15000,
+    'iPhone 13': 10000,
+    'iPhone 12 Pro Max': 8000,
+    'iPhone 12 Pro': 7000,
+    'iPhone 12': 6000,
+    'iPhone 11 Pro Max': 5000,
+    'iPhone 11 Pro': 4000,
   };
   return priceMap[itemName] || 0;
 }
