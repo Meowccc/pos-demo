@@ -6,10 +6,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "react-scripts start",
-    "build": "react-scripts dist",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy": "gh-pages -d dist --no-history"
+    "deploy": "gh-pages -d build --no-history"
   },
   "dependencies": {
     "react": "^18.2.0",
