@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import communicationService from '../services/CommunicationService';
 
@@ -140,21 +140,70 @@ const SelectedOrderInfo = styled.div`
   margin-bottom: 20px;
 `;
 
+const ScannerSection = styled.div`
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 2px solid #3498db;
+`;
+
+const ScannerInput = styled.input`
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #3498db;
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+  letter-spacing: 2px;
+  
+  &:focus {
+    outline: none;
+    border-color: #e74c3c;
+    box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
+  }
+`;
+
+const ScannerLabel = styled.div`
+  font-size: 14px;
+  color: #7f8c8d;
+  margin-bottom: 8px;
+  text-align: center;
+`;
+
 const ItemList = styled.div`
-  max-height: 400px;
+  height: 400px;
   overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
 `;
 
 const ItemRow = styled.div`
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
   padding: 15px;
-  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 10px;
   align-items: center;
+  transition: all 0.3s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  ${props => props.highlighted && `
+    background: #fff3cd;
+    border-left: 4px solid #f39c12;
+    animation: highlight 0.5s ease-in-out;
+  `}
+
+  @keyframes highlight {
+    0% { background: #fff3cd; }
+    50% { background: #ffeaa7; }
+    100% { background: #fff3cd; }
+  }
 `;
 
 const ItemName = styled.div`
@@ -165,6 +214,7 @@ const ItemName = styled.div`
 const ItemSku = styled.div`
   color: #7f8c8d;
   font-size: 0.9rem;
+  font-family: 'Courier New', monospace;
 `;
 
 const ItemQuantity = styled.div`
@@ -233,11 +283,26 @@ const DebugInfo = styled.div`
   z-index: 1000;
 `;
 
+const StatusMessage = styled.div`
+  background: ${props => props.type === 'success' ? '#27ae60' : props.type === 'error' ? '#e74c3c' : '#3498db'};
+  color: white;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 12px;
+  margin-top: 8px;
+  text-align: center;
+`;
+
 function StaffDisplay() {
   const [searchQuery, setSearchQuery] = useState('');
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState({ isConnected: false, connectionType: null, debugInfo: '初始化中...' });
+  const [scannerInput, setScannerInput] = useState('');
+  const [scannerStatus, setScannerStatus] = useState('');
+  const [highlightedItem, setHighlightedItem] = useState(null);
+  const itemListRef = useRef(null);
+  const itemRefs = useRef({});
 
   // 模擬訂單數據
   const mockOrders = [
@@ -247,8 +312,21 @@ function StaffDisplay() {
       customerName: '張小明',
       status: '待取貨',
       items: [
-        { id: 1, name: 'iPhone 15 Pro Max', sku: 'IP15PM-256-BLACK', quantity: 2, scanned: 0 },
-        { id: 2, name: 'AirPods Pro', sku: 'APP-2ND-GEN', quantity: 1, scanned: 0 }
+        { id: 1, name: 'iPhone 15 Pro Max', sku: 'SKU1', quantity: 2, scanned: 0 },
+        { id: 2, name: 'AirPods Pro', sku: 'SKU2', quantity: 1, scanned: 0 },
+        { id: 3, name: 'Apple Watch Series 9', sku: 'SKU3', quantity: 1, scanned: 0 },
+        { id: 4, name: 'iPad Pro 12.9', sku: 'SKU4', quantity: 1, scanned: 0 },
+        { id: 5, name: 'MacBook Pro 14', sku: 'SKU5', quantity: 1, scanned: 0 },
+        { id: 6, name: 'Magic Keyboard', sku: 'SKU6', quantity: 2, scanned: 0 },
+        { id: 7, name: 'Magic Mouse Black', sku: 'SKU7', quantity: 1, scanned: 0 },
+        { id: 8, name: 'Magic Mouse White', sku: 'SKU8', quantity: 1, scanned: 0 },
+        { id: 9, name: 'iPhone 14 Pro', sku: 'SKU9', quantity: 1, scanned: 0 },
+        { id: 10, name: 'iPhone 13 Pro', sku: 'SKU10', quantity: 1, scanned: 0 },
+        { id: 11, name: 'iPhone 12 Pro', sku: 'SKU11', quantity: 2, scanned: 0 },
+        { id: 12, name: 'iPhone 11 Pro', sku: 'SKU12', quantity: 2, scanned: 0 },
+        { id: 13, name: 'iPhone 16 Pro', sku: 'SKU13', quantity: 2, scanned: 0 },
+        { id: 14, name: 'iPhone 16 Pro Max', sku: 'SKU14', quantity: 2, scanned: 0 },
+        { id: 15, name: 'iPhone 16', sku: 'SKU15', quantity: 2, scanned: 0 },
       ]
     },
     {
@@ -257,8 +335,8 @@ function StaffDisplay() {
       customerName: '李小華',
       status: '待取貨',
       items: [
-        { id: 3, name: 'iPhone 15', sku: 'IP15-128-PINK', quantity: 1, scanned: 0 },
-        { id: 4, name: 'Apple Watch Series 9', sku: 'AWS9-45-ALUM', quantity: 1, scanned: 0 }
+        { id: 8, name: 'iPhone 15', sku: 'IP15-128-PINK', quantity: 1, scanned: 0 },
+        { id: 9, name: 'Apple Watch Series 9', sku: 'AWS9-45-ALUM', quantity: 1, scanned: 0 }
       ]
     },
     {
@@ -267,7 +345,7 @@ function StaffDisplay() {
       customerName: '王大明',
       status: '待取貨',
       items: [
-        { id: 5, name: 'iPad Pro 12.9', sku: 'IPP12-256-SPACE', quantity: 1, scanned: 0 }
+        { id: 10, name: 'iPad Pro 12.9', sku: 'IPP12-256-SPACE', quantity: 1, scanned: 0 }
       ]
     }
   ];
@@ -309,6 +387,9 @@ function StaffDisplay() {
 
   const selectOrder = (order) => {
     setSelectedOrder(order);
+    setScannerInput('');
+    setScannerStatus('');
+    setHighlightedItem(null);
     
     // 發送選中的訂單到客戶顯示器
     sendMessage('SELECT_ORDER', {
@@ -338,6 +419,63 @@ function StaffDisplay() {
       customerName: updatedOrder.customerName,
       items: updatedOrder.items
     });
+  };
+
+  const handleScannerInput = (e) => {
+    const value = e.target.value.toUpperCase();
+    setScannerInput(value);
+    
+    if (value.length >= 3) { // 假設 SKU 至少 3 個字符
+      const foundItem = selectedOrder?.items.find(item => 
+        item.sku.includes(value)
+      );
+      
+      if (foundItem) {
+        // 高亮對應的品項
+        setHighlightedItem(foundItem.id);
+        
+        // 自動滾動到對應的品項
+        if (itemRefs.current[foundItem.id] && itemListRef.current) {
+          itemRefs.current[foundItem.id].scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+        }
+        
+        // 增加掃描數量
+        const updatedOrder = {
+          ...selectedOrder,
+          items: selectedOrder.items.map(item => 
+            item.id === foundItem.id 
+              ? { ...item, scanned: Math.min(item.scanned + 1, item.quantity) }
+              : item
+          )
+        };
+        
+        setSelectedOrder(updatedOrder);
+        setScannerStatus('success');
+        
+        // 發送更新後的訂單到客戶顯示器
+        sendMessage('UPDATE_ORDER', {
+          number: updatedOrder.number,
+          customerName: updatedOrder.customerName,
+          items: updatedOrder.items
+        });
+        
+        // 清除輸入框和狀態
+        setTimeout(() => {
+          setScannerInput('');
+          setScannerStatus('');
+          setHighlightedItem(null);
+        }, 1000);
+        
+      } else {
+        setScannerStatus('error');
+        setTimeout(() => {
+          setScannerStatus('');
+        }, 1000);
+      }
+    }
   };
 
   const getTotalScanned = (items) => {
@@ -406,9 +544,29 @@ function StaffDisplay() {
                 </SelectedOrderInfo>
               </OrderDetailHeader>
 
-              <ItemList>
-                {selectedOrder.items.map(item => (
-                  <ItemRow key={item.id}>
+              <ScannerSection>
+                <ScannerLabel>📱 SKU 掃描器</ScannerLabel>
+                <ScannerInput
+                  type="text"
+                  placeholder="請掃描或輸入 SKU"
+                  value={scannerInput}
+                  onChange={handleScannerInput}
+                  autoFocus
+                />
+                {scannerStatus && (
+                  <StatusMessage type={scannerStatus}>
+                    {scannerStatus === 'success' ? '✅ 掃描成功' : '❌ SKU 未找到'}
+                  </StatusMessage>
+                )}
+              </ScannerSection>
+
+              <ItemList ref={itemListRef}>
+                {selectedOrder.items.map((item, index) => (
+                  <ItemRow 
+                    key={item.id}
+                    ref={el => itemRefs.current[item.id] = el}
+                    highlighted={highlightedItem === item.id}
+                  >
                     <ItemName>{item.name}</ItemName>
                     <ItemSku>{item.sku}</ItemSku>
                     <ItemQuantity>
