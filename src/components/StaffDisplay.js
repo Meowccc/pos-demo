@@ -31,7 +31,7 @@ const Content = styled.div`
   min-height: 600px;
 `;
 
-const OrderSection = styled.div`
+const SearchSection = styled.div`
   background: #f8f9fa;
   border-radius: 10px;
   padding: 20px;
@@ -43,6 +43,40 @@ const SectionTitle = styled.h3`
   font-size: 1.3rem;
   border-bottom: 2px solid #3498db;
   padding-bottom: 10px;
+`;
+
+const SearchForm = styled.div`
+  margin-bottom: 20px;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-bottom: 10px;
+  
+  &:focus {
+    outline: none;
+    border-color: #3498db;
+  }
+`;
+
+const SearchButton = styled.button`
+  width: 100%;
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #2980b9;
+  }
 `;
 
 const OrderList = styled.div`
@@ -81,119 +115,97 @@ const CustomerName = styled.div`
   margin-top: 5px;
 `;
 
-const OrderTotal = styled.div`
+const OrderStatus = styled.div`
   color: #e74c3c;
   font-weight: bold;
   margin-top: 5px;
 `;
 
-const ActionSection = styled.div`
+const DetailSection = styled.div`
   background: #f8f9fa;
   border-radius: 10px;
   padding: 20px;
 `;
 
-const ProductGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+const OrderDetailHeader = styled.div`
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #3498db;
+`;
+
+const SelectedOrderInfo = styled.div`
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
   margin-bottom: 20px;
 `;
 
-const ProductButton = styled.button`
-  background: #3498db;
-  color: white;
-  border: none;
-  padding: 15px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: #2980b9;
-    transform: translateY(-2px);
-  }
+const ItemList = styled.div`
+  max-height: 400px;
+  overflow-y: auto;
 `;
 
-const ActionButtons = styled.div`
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-`;
-
-const ActionButton = styled.button`
-  flex: 1;
-  padding: 15px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &.primary {
-    background: #27ae60;
-    color: white;
-  }
-
-  &.secondary {
-    background: #e74c3c;
-    color: white;
-  }
-
-  &.warning {
-    background: #f39c12;
-    color: white;
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  }
-`;
-
-const CurrentOrder = styled.div`
+const ItemRow = styled.div`
   background: white;
-  border: 2px solid #3498db;
-  border-radius: 10px;
-  padding: 20px;
-  margin-top: 20px;
-`;
-
-const OrderItems = styled.div`
-  margin-top: 15px;
-`;
-
-const OrderItemRow = styled.div`
-  display: flex;
-  justify-content: space-between;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 10px;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
-
-  &:last-child {
-    border-bottom: none;
-  }
 `;
 
-const ItemName = styled.span`
+const ItemName = styled.div`
   font-weight: 500;
+  color: #2c3e50;
 `;
 
-const ItemPrice = styled.span`
+const ItemSku = styled.div`
+  color: #7f8c8d;
+  font-size: 0.9rem;
+`;
+
+const ItemQuantity = styled.div`
   color: #e74c3c;
   font-weight: bold;
+  text-align: center;
 `;
 
-const TotalAmount = styled.div`
-  text-align: right;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #2c3e50;
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 2px solid #3498db;
+const ScanProgress = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const ScanInput = styled.input`
+  width: 60px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 14px;
+`;
+
+const ProgressBar = styled.div`
+  flex: 1;
+  height: 8px;
+  background: #ecf0f1;
+  border-radius: 4px;
+  overflow: hidden;
+`;
+
+const ProgressFill = styled.div`
+  height: 100%;
+  background: ${props => {
+    const percentage = (props.scanned / props.total) * 100;
+    if (percentage >= 100) return '#27ae60';
+    if (percentage >= 80) return '#f39c12';
+    return '#3498db';
+  }};
+  width: ${props => Math.min((props.scanned / props.total) * 100, 100)}%;
+  transition: all 0.3s ease;
 `;
 
 const ConnectionStatus = styled.div`
@@ -222,26 +234,42 @@ const DebugInfo = styled.div`
 `;
 
 function StaffDisplay() {
+  const [searchQuery, setSearchQuery] = useState('');
   const [orders, setOrders] = useState([]);
-  const [currentOrder, setCurrentOrder] = useState(null);
-  const [currentOrderItems, setCurrentOrderItems] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState({ isConnected: false, connectionType: null, debugInfo: '初始化中...' });
 
-  const products = [
-    { name: 'iPhone 15 Pro Max', price: 50000 },
-    { name: 'iPhone 15 Pro', price: 45000 },
-    { name: 'iPhone 15', price: 40000 },
-    { name: 'iPhone 14 Pro Max', price: 35000 },
-    { name: 'iPhone 14 Pro', price: 30000 },
-    { name: 'iPhone 14', price: 25000 },
-    { name: 'iPhone 13 Pro Max', price: 20000 },
-    { name: 'iPhone 13 Pro', price: 15000 },
-    { name: 'iPhone 13', price: 10000 },
-    { name: 'iPhone 12 Pro Max', price: 8000 },
-    { name: 'iPhone 12 Pro', price: 7000 },
-    { name: 'iPhone 12', price: 6000 },
-    { name: 'iPhone 11 Pro Max', price: 5000 },
-    { name: 'iPhone 11 Pro', price: 4000 }
+  // 模擬訂單數據
+  const mockOrders = [
+    {
+      id: 1,
+      number: 'ORD-2024-001',
+      customerName: '張小明',
+      status: '待取貨',
+      items: [
+        { id: 1, name: 'iPhone 15 Pro Max', sku: 'IP15PM-256-BLACK', quantity: 2, scanned: 0 },
+        { id: 2, name: 'AirPods Pro', sku: 'APP-2ND-GEN', quantity: 1, scanned: 0 }
+      ]
+    },
+    {
+      id: 2,
+      number: 'ORD-2024-002',
+      customerName: '李小華',
+      status: '待取貨',
+      items: [
+        { id: 3, name: 'iPhone 15', sku: 'IP15-128-PINK', quantity: 1, scanned: 0 },
+        { id: 4, name: 'Apple Watch Series 9', sku: 'AWS9-45-ALUM', quantity: 1, scanned: 0 }
+      ]
+    },
+    {
+      id: 3,
+      number: 'ORD-2024-003',
+      customerName: '王大明',
+      status: '待取貨',
+      items: [
+        { id: 5, name: 'iPad Pro 12.9', sku: 'IPP12-256-SPACE', quantity: 1, scanned: 0 }
+      ]
+    }
   ];
 
   useEffect(() => {
@@ -265,56 +293,60 @@ function StaffDisplay() {
     communicationService.sendMessage(type, data);
   };
 
-  const addToOrder = (product) => {
-    const newOrderItems = [...currentOrderItems, product];
-    setCurrentOrderItems(newOrderItems);
-    
-    // 發送當前正在建立的訂單到客戶顯示器
-    const currentOrderData = {
-      id: 'temp',
-      number: '建立中...',
-      customerName: '準備中',
-      total: newOrderItems.reduce((sum, item) => sum + item.price, 0),
-      items: newOrderItems.map(item => item.name),
-      isBuilding: true // 標記為正在建立中
-    };
-    
-    sendMessage('BUILDING_ORDER', currentOrderData);
-  };
-
-  const createNewOrder = () => {
-    if (currentOrderItems.length === 0) return;
-    
-    const newOrder = {
-      id: orders.length + 1,
-      number: `ORD-${String(orders.length + 1).padStart(3, '0')}`,
-      customerName: `顧客${orders.length + 1}`,
-      total: currentOrderItems.reduce((sum, item) => sum + item.price, 0),
-      items: currentOrderItems.map(item => item.name)
-    };
-
-    setOrders([...orders, newOrder]);
-    setCurrentOrderItems([]);
-    
-    // 發送消息到客戶顯示器
-    sendMessage('NEW_ORDER', newOrder);
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      // 模擬搜尋結果
+      const filteredOrders = mockOrders.filter(order => 
+        order.number.includes(searchQuery) || 
+        order.customerName.includes(searchQuery)
+      );
+      setOrders(filteredOrders);
+      
+      // 發送搜尋結果到客戶顯示器
+      sendMessage('SEARCH_RESULTS', filteredOrders);
+    }
   };
 
   const selectOrder = (order) => {
-    setCurrentOrder(order);
+    setSelectedOrder(order);
     
-    // 發送消息到客戶顯示器
-    sendMessage('SELECT_ORDER', order);
+    // 發送選中的訂單到客戶顯示器
+    sendMessage('SELECT_ORDER', {
+      number: order.number,
+      customerName: order.customerName,
+      items: order.items
+    });
   };
 
-  const clearOrder = () => {
-    setCurrentOrderItems([]);
+  const handleScan = (itemId, scannedValue) => {
+    if (!selectedOrder) return;
+
+    const updatedOrder = {
+      ...selectedOrder,
+      items: selectedOrder.items.map(item => 
+        item.id === itemId 
+          ? { ...item, scanned: Math.min(parseInt(scannedValue) || 0, item.quantity) }
+          : item
+      )
+    };
+
+    setSelectedOrder(updatedOrder);
     
-    // 發送清除訊息到客戶顯示器
-    sendMessage('CLEAR_ORDER', null);
+    // 發送更新後的訂單到客戶顯示器
+    sendMessage('UPDATE_ORDER', {
+      number: updatedOrder.number,
+      customerName: updatedOrder.customerName,
+      items: updatedOrder.items
+    });
   };
 
-  const totalAmount = currentOrderItems.reduce((sum, item) => sum + item.price, 0);
+  const getTotalScanned = (items) => {
+    return items.reduce((sum, item) => sum + item.scanned, 0);
+  };
+
+  const getTotalQuantity = (items) => {
+    return items.reduce((sum, item) => sum + item.quantity, 0);
+  };
 
   return (
     <StaffContainer>
@@ -326,68 +358,99 @@ function StaffDisplay() {
       <DebugInfo>{connectionStatus.debugInfo}</DebugInfo>
 
       <Header>
-        <HeaderTitle>營業員操作介面</HeaderTitle>
+        <HeaderTitle>訂單查詢與掃描系統</HeaderTitle>
       </Header>
       
       <Content>
-        <OrderSection>
+        <SearchSection>
+          <SectionTitle>訂單查詢</SectionTitle>
+          <SearchForm>
+            <SearchInput
+              type="text"
+              placeholder="輸入訂單號或客戶姓名"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            />
+            <SearchButton onClick={handleSearch}>
+              搜尋訂單
+            </SearchButton>
+          </SearchForm>
+
           <SectionTitle>訂單列表</SectionTitle>
           <OrderList>
             {orders.map(order => (
               <OrderItem 
                 key={order.id} 
-                active={currentOrder?.id === order.id}
+                active={selectedOrder?.id === order.id}
                 onClick={() => selectOrder(order)}
               >
                 <OrderNumber>{order.number}</OrderNumber>
                 <CustomerName>{order.customerName}</CustomerName>
-                <OrderTotal>NT$ {order.total}</OrderTotal>
+                <OrderStatus>{order.status}</OrderStatus>
               </OrderItem>
             ))}
           </OrderList>
-        </OrderSection>
+        </SearchSection>
 
-        <ActionSection>
-          <SectionTitle>新增訂單</SectionTitle>
-          <ProductGrid>
-            {products.map(product => (
-              <ProductButton 
-                key={product.name}
-                onClick={() => addToOrder(product)}
-              >
-                {product.name}<br/>
-                NT$ {product.price}
-              </ProductButton>
-            ))}
-          </ProductGrid>
+        <DetailSection>
+          <SectionTitle>訂單明細</SectionTitle>
+          
+          {selectedOrder ? (
+            <>
+              <OrderDetailHeader>
+                <SelectedOrderInfo>
+                  <OrderNumber>{selectedOrder.number}</OrderNumber>
+                  <CustomerName>領貨人: {selectedOrder.customerName}</CustomerName>
+                  <OrderStatus>狀態: {selectedOrder.status}</OrderStatus>
+                </SelectedOrderInfo>
+              </OrderDetailHeader>
 
-          <ActionButtons>
-            <ActionButton className="primary" onClick={createNewOrder}>
-              建立訂單
-            </ActionButton>
-            <ActionButton className="warning" onClick={clearOrder}>
-              清除
-            </ActionButton>
-            <ActionButton className="secondary" onClick={() => sendMessage('END_SESSION', null)}>
-              結束營業
-            </ActionButton>
-          </ActionButtons>
-
-          {currentOrderItems.length > 0 && (
-            <CurrentOrder>
-              <SectionTitle>當前訂單</SectionTitle>
-              <OrderItems>
-                {currentOrderItems.map((item, index) => (
-                  <OrderItemRow key={index}>
+              <ItemList>
+                {selectedOrder.items.map(item => (
+                  <ItemRow key={item.id}>
                     <ItemName>{item.name}</ItemName>
-                    <ItemPrice>NT$ {item.price}</ItemPrice>
-                  </OrderItemRow>
+                    <ItemSku>{item.sku}</ItemSku>
+                    <ItemQuantity>
+                      {item.scanned}/{item.quantity}
+                    </ItemQuantity>
+                    <ScanProgress>
+                      <ScanInput
+                        type="number"
+                        min="0"
+                        max={item.quantity}
+                        value={item.scanned}
+                        onChange={(e) => handleScan(item.id, e.target.value)}
+                      />
+                      <ProgressBar>
+                        <ProgressFill 
+                          scanned={item.scanned} 
+                          total={item.quantity}
+                        />
+                      </ProgressBar>
+                    </ScanProgress>
+                  </ItemRow>
                 ))}
-              </OrderItems>
-              <TotalAmount>總計: NT$ {totalAmount}</TotalAmount>
-            </CurrentOrder>
+              </ItemList>
+
+              <div style={{ marginTop: '20px', padding: '15px', background: 'white', borderRadius: '8px' }}>
+                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#2c3e50' }}>
+                  總進度: {getTotalScanned(selectedOrder.items)}/{getTotalQuantity(selectedOrder.items)}
+                </div>
+                <ProgressBar style={{ marginTop: '10px' }}>
+                  <ProgressFill 
+                    scanned={getTotalScanned(selectedOrder.items)} 
+                    total={getTotalQuantity(selectedOrder.items)}
+                  />
+                </ProgressBar>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#7f8c8d' }}>
+              請選擇一個訂單查看明細
+            </div>
           )}
-        </ActionSection>
+        </DetailSection>
       </Content>
     </StaffContainer>
   );

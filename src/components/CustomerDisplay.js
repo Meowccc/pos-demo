@@ -35,10 +35,48 @@ const Content = styled.div`
   text-align: center;
 `;
 
-const WelcomeMessage = styled.div`
+const WelcomeDisplay = styled.div`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 15px;
+  padding: 60px 30px;
+  margin-bottom: 30px;
+  color: white;
+  text-align: center;
+  animation: fadeIn 2s ease-in;
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+`;
+
+const WelcomeIcon = styled.div`
+  font-size: 4rem;
+  margin-bottom: 20px;
+  animation: bounce 2s infinite;
+  
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+  }
+`;
+
+const WelcomeTitle = styled.h1`
+  font-size: 3rem;
+  margin-bottom: 15px;
+  font-weight: bold;
+`;
+
+const WelcomeSubtitle = styled.p`
   font-size: 1.5rem;
-  color: #7f8c8d;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
+  opacity: 0.9;
+`;
+
+const WelcomeTime = styled.div`
+  font-size: 1.2rem;
+  opacity: 0.8;
 `;
 
 const OrderDisplay = styled.div`
@@ -94,9 +132,41 @@ const ItemName = styled.span`
   color: #2c3e50;
 `;
 
-const ItemPrice = styled.span`
+const ItemSku = styled.span`
+  color: #7f8c8d;
+  font-size: 1rem;
+`;
+
+const ItemQuantity = styled.span`
   color: #e74c3c;
   font-weight: bold;
+`;
+
+const ScanProgress = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 120px;
+`;
+
+const ProgressBar = styled.div`
+  flex: 1;
+  height: 8px;
+  background: #ecf0f1;
+  border-radius: 4px;
+  overflow: hidden;
+`;
+
+const ProgressFill = styled.div`
+  height: 100%;
+  background: ${props => {
+    const percentage = (props.scanned / props.total) * 100;
+    if (percentage >= 100) return '#27ae60';
+    if (percentage >= 80) return '#f39c12';
+    return '#3498db';
+  }};
+  width: ${props => Math.min((props.scanned / props.total) * 100, 100)}%;
+  transition: all 0.3s ease;
 `;
 
 const TotalSection = styled.div`
@@ -152,128 +222,40 @@ const DebugInfo = styled.div`
   z-index: 1000;
 `;
 
-const BuildingOrderDisplay = styled.div`
+const OrderListDisplay = styled.div`
   background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
   border-radius: 15px;
   padding: 30px;
   margin-bottom: 30px;
   border: 3px solid #f39c12;
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  animation: pulse 2s infinite;
-  
-  @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.02); }
-    100% { transform: scale(1); }
-  }
 `;
 
-const BuildingHeader = styled.div`
-  margin-bottom: 25px;
-  text-align: center;
+const OrderListItem = styled.div`
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 15px;
+  text-align: left;
 `;
 
-const BuildingTitle = styled.div`
-  font-size: 2rem;
+const ListOrderNumber = styled.div`
+  font-size: 1.5rem;
   font-weight: bold;
-  color: #d68910;
-  margin-bottom: 10px;
-`;
-
-const BuildingSubtitle = styled.div`
-  font-size: 1.2rem;
-  color: #b7950b;
+  color: #2c3e50;
   margin-bottom: 5px;
 `;
 
-const WelcomeDisplay = styled.div`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 15px;
-  padding: 60px 30px;
-  margin-bottom: 30px;
-  color: white;
-  text-align: center;
-  animation: fadeIn 2s ease-in;
-  
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-`;
-
-const WelcomeIcon = styled.div`
-  font-size: 4rem;
-  margin-bottom: 20px;
-  animation: bounce 2s infinite;
-  
-  @keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-10px); }
-    60% { transform: translateY(-5px); }
-  }
-`;
-
-const WelcomeTitle = styled.h1`
-  font-size: 3rem;
-  margin-bottom: 15px;
-  font-weight: bold;
-`;
-
-const WelcomeSubtitle = styled.p`
-  font-size: 1.5rem;
-  margin-bottom: 20px;
-  opacity: 0.9;
-`;
-
-const WelcomeTime = styled.div`
+const ListCustomerName = styled.div`
   font-size: 1.2rem;
-  opacity: 0.8;
-`;
-
-const ClosedDisplay = styled.div`
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-  border-radius: 15px;
-  padding: 60px 30px;
-  margin-bottom: 30px;
-  color: white;
-  text-align: center;
-  animation: slideIn 1s ease-out;
-  
-  @keyframes slideIn {
-    from { transform: translateX(-100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-`;
-
-const ClosedIcon = styled.div`
-  font-size: 4rem;
-  margin-bottom: 20px;
-  animation: shake 0.5s ease-in-out;
-  
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-  }
-`;
-
-const ClosedTitle = styled.h1`
-  font-size: 3rem;
-  margin-bottom: 15px;
-  font-weight: bold;
-`;
-
-const ClosedSubtitle = styled.p`
-  font-size: 1.5rem;
-  margin-bottom: 20px;
-  opacity: 0.9;
+  color: #7f8c8d;
 `;
 
 function CustomerDisplay() {
   const [currentOrder, setCurrentOrder] = useState(null);
+  const [orderList, setOrderList] = useState([]);
   const [connectionStatus, setConnectionStatus] = useState({ isConnected: false, connectionType: null, debugInfo: '初始化中...' });
   const [statusMessage, setStatusMessage] = useState('');
-  const [isClosed, setIsClosed] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
 
   useEffect(() => {
@@ -286,35 +268,21 @@ function CustomerDisplay() {
     const handleMessage = (message) => {
       const { type, data } = message;
       
-      if (type === 'NEW_ORDER') {
-        setCurrentOrder(data);
+      if (type === 'SEARCH_RESULTS') {
+        setOrderList(data);
+        setCurrentOrder(null);
         setShowWelcome(false);
-        setIsClosed(false);
-        setStatusMessage(`新訂單已建立: ${data.number}`);
+        setStatusMessage(`找到 ${data.length} 筆訂單`);
         setTimeout(() => setStatusMessage(''), 3000);
       } else if (type === 'SELECT_ORDER') {
         setCurrentOrder(data);
         setShowWelcome(false);
-        setIsClosed(false);
         setStatusMessage(`已選擇訂單: ${data.number}`);
         setTimeout(() => setStatusMessage(''), 3000);
-      } else if (type === 'BUILDING_ORDER') {
+      } else if (type === 'UPDATE_ORDER') {
         setCurrentOrder(data);
-        setShowWelcome(false);
-        setIsClosed(false);
-        setStatusMessage('正在建立訂單...');
-      } else if (type === 'CLEAR_ORDER') {
-        setCurrentOrder(null);
-        setShowWelcome(true);
-        setIsClosed(false);
-        setStatusMessage('訂單已清除');
-        setTimeout(() => setStatusMessage(''), 3000);
-      } else if (type === 'END_SESSION') {
-        setCurrentOrder(null);
-        setShowWelcome(false);
-        setIsClosed(true);
-        setStatusMessage('營業結束');
-        setTimeout(() => setStatusMessage(''), 5000);
+        setStatusMessage('訂單已更新');
+        setTimeout(() => setStatusMessage(''), 2000);
       }
     };
 
@@ -352,6 +320,14 @@ function CustomerDisplay() {
     });
   };
 
+  const getTotalScanned = (items) => {
+    return items.reduce((sum, item) => sum + item.scanned, 0);
+  };
+
+  const getTotalQuantity = (items) => {
+    return items.reduce((sum, item) => sum + item.quantity, 0);
+  };
+
   return (
     <CustomerContainer>
       <ConnectionStatus connected={connectionStatus.isConnected}>
@@ -371,94 +347,72 @@ function CustomerDisplay() {
           <StatusMessage>{statusMessage}</StatusMessage>
         )}
 
-        {isClosed ? (
-          <ClosedDisplay>
-            <ClosedIcon>🏪</ClosedIcon>
-            <ClosedTitle>營業結束</ClosedTitle>
-            <ClosedSubtitle>感謝您的光臨</ClosedSubtitle>
-            <WelcomeTime>下次再見！</WelcomeTime>
-          </ClosedDisplay>
-        ) : showWelcome ? (
+        {showWelcome ? (
           <WelcomeDisplay>
             <WelcomeIcon>👋</WelcomeIcon>
             <WelcomeTitle>歡迎光臨</WelcomeTitle>
             <WelcomeSubtitle>我們很高興為您服務</WelcomeSubtitle>
             <WelcomeTime>現在時間：{formatTime()}</WelcomeTime>
           </WelcomeDisplay>
+        ) : orderList.length > 0 && !currentOrder ? (
+          <OrderListDisplay>
+            <h2 style={{ marginBottom: '20px', color: '#d68910' }}>訂單列表</h2>
+            {orderList.map(order => (
+              <OrderListItem key={order.id}>
+                <ListOrderNumber>{order.number}</ListOrderNumber>
+                <ListCustomerName>領貨人: {order.customerName}</ListCustomerName>
+              </OrderListItem>
+            ))}
+          </OrderListDisplay>
         ) : currentOrder ? (
-          currentOrder.isBuilding ? (
-            <BuildingOrderDisplay>
-              <BuildingHeader>
-                <BuildingTitle>🔄 正在建立訂單</BuildingTitle>
-                <BuildingSubtitle>請稍候...</BuildingSubtitle>
-                <OrderDate>{formatDate()}</OrderDate>
-              </BuildingHeader>
+          <OrderDisplay>
+            <OrderHeader>
+              <OrderNumber>{currentOrder.number}</OrderNumber>
+              <CustomerName>領貨人: {currentOrder.customerName}</CustomerName>
+              <OrderDate>{formatDate()}</OrderDate>
+            </OrderHeader>
 
-              <OrderItems>
-                {currentOrder.items.map((item, index) => (
-                  <ItemRow key={index}>
-                    <ItemName>{item}</ItemName>
-                    <ItemPrice>NT$ {getItemPrice(item)}</ItemPrice>
-                  </ItemRow>
-                ))}
-              </OrderItems>
+            <OrderItems>
+              {currentOrder.items.map((item, index) => (
+                <ItemRow key={index}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1 }}>
+                    <ItemName>{item.name}</ItemName>
+                    <ItemSku>SKU: {item.sku}</ItemSku>
+                  </div>
+                  <ItemQuantity>{item.scanned}/{item.quantity}</ItemQuantity>
+                  <ScanProgress>
+                    <ProgressBar>
+                      <ProgressFill 
+                        scanned={item.scanned} 
+                        total={item.quantity}
+                      />
+                    </ProgressBar>
+                  </ScanProgress>
+                </ItemRow>
+              ))}
+            </OrderItems>
 
-              <TotalSection>
-                <TotalAmount>目前總計: NT$ {currentOrder.total}</TotalAmount>
-              </TotalSection>
-            </BuildingOrderDisplay>
-          ) : (
-            <OrderDisplay>
-              <OrderHeader>
-                <OrderNumber>{currentOrder.number}</OrderNumber>
-                <CustomerName>{currentOrder.customerName}</CustomerName>
-                <OrderDate>{formatDate()}</OrderDate>
-              </OrderHeader>
-
-              <OrderItems>
-                {currentOrder.items.map((item, index) => (
-                  <ItemRow key={index}>
-                    <ItemName>{item}</ItemName>
-                    <ItemPrice>NT$ {getItemPrice(item)}</ItemPrice>
-                  </ItemRow>
-                ))}
-              </OrderItems>
-
-              <TotalSection>
-                <TotalAmount>總計: NT$ {currentOrder.total}</TotalAmount>
-              </TotalSection>
-            </OrderDisplay>
-          )
+            <TotalSection>
+              <TotalAmount>
+                總進度: {getTotalScanned(currentOrder.items)}/{getTotalQuantity(currentOrder.items)}
+              </TotalAmount>
+              <ProgressBar style={{ marginTop: '10px' }}>
+                <ProgressFill 
+                  scanned={getTotalScanned(currentOrder.items)} 
+                  total={getTotalQuantity(currentOrder.items)}
+                />
+              </ProgressBar>
+            </TotalSection>
+          </OrderDisplay>
         ) : (
           <NoOrderMessage>
-            等待訂單中...<br/>
+            等待訂單查詢...<br/>
             請稍候
           </NoOrderMessage>
         )}
       </Content>
     </CustomerContainer>
   );
-}
-
-// 輔助函數：根據品項名稱獲取價格
-function getItemPrice(itemName) {
-  const priceMap = {
-    'iPhone 15 Pro Max': 50000,
-    'iPhone 15 Pro': 45000,
-    'iPhone 15': 40000,
-    'iPhone 14 Pro Max': 35000,
-    'iPhone 14 Pro': 30000,
-    'iPhone 14': 25000,
-    'iPhone 13 Pro Max': 20000,
-    'iPhone 13 Pro': 15000,
-    'iPhone 13': 10000,
-    'iPhone 12 Pro Max': 8000,
-    'iPhone 12 Pro': 7000,
-    'iPhone 12': 6000,
-    'iPhone 11 Pro Max': 5000,
-    'iPhone 11 Pro': 4000,
-  };
-  return priceMap[itemName] || 0;
 }
 
 export default CustomerDisplay; 
