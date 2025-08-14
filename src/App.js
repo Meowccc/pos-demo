@@ -88,17 +88,20 @@ const StyledLink = styled.a`
 `;
 
 function App() {
+  // 根據環境設定 basename
+  const basename = process.env.NODE_ENV === 'production' ? '/pos-demo' : '';
+  
   return (
-    <Router>
+    <Router basename={basename}>
       <AppContainer>
         <Navigation>
-          <NavButton onClick={() => window.location.href = '/'}>
+          <NavButton onClick={() => window.location.href = basename + '/'}>
             首頁
           </NavButton>
-          <NavButton onClick={() => window.location.href = '/staff'}>
+          <NavButton onClick={() => window.location.href = basename + '/staff'}>
             營業員
           </NavButton>
-          <NavButton onClick={() => window.location.href = '/customer'}>
+          <NavButton onClick={() => window.location.href = basename + '/customer'}>
             客戶
           </NavButton>
         </Navigation>
@@ -112,10 +115,10 @@ function App() {
                 請選擇要開啟的顯示器類型
               </HomeDescription>
               <LinkContainer>
-                <StyledLink href="/staff">
+                <StyledLink href={basename + '/staff'}>
                   🖥️ 營業員操作介面
                 </StyledLink>
-                <StyledLink href="/customer">
+                <StyledLink href={basename + '/customer'}>
                   📺 客戶顯示器
                 </StyledLink>
               </LinkContainer>
