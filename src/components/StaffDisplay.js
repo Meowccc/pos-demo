@@ -309,7 +309,7 @@ function StaffDisplay() {
     {
       id: 1,
       number: 'ORD-2024-001',
-      customerName: '張小明',
+      customerName: 'User-1',
       status: '待取貨',
       items: [
         { id: 1, name: 'iPhone 15 Pro Max', sku: 'SKU1', quantity: 2, scanned: 0 },
@@ -332,7 +332,7 @@ function StaffDisplay() {
     {
       id: 2,
       number: 'ORD-2024-002',
-      customerName: '李小華',
+      customerName: 'User-2',
       status: '待取貨',
       items: [
         { id: 8, name: 'iPhone 15', sku: 'IP15-128-PINK', quantity: 1, scanned: 0 },
@@ -342,7 +342,7 @@ function StaffDisplay() {
     {
       id: 3,
       number: 'ORD-2024-003',
-      customerName: '王大明',
+      customerName: 'User-1',
       status: '待取貨',
       items: [
         { id: 10, name: 'iPad Pro 12.9', sku: 'IPP12-256-SPACE', quantity: 1, scanned: 0 }
