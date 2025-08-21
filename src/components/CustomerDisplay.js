@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import communicationService from '../services/CommunicationService';
+import BannerDisplay from './BannerDisplay';
 
 const CustomerContainer = styled.div`
-  max-width: 800px;
+  max-width: 1200px;
+  height: 800px;
   margin: 0 auto;
   background: white;
   border-radius: 15px;
@@ -339,7 +341,6 @@ function CustomerDisplay() {
 
       <Header>
         <HeaderTitle>客戶顯示器</HeaderTitle>
-        <Subtitle>歡迎光臨</Subtitle>
       </Header>
 
       <Content>
@@ -348,12 +349,13 @@ function CustomerDisplay() {
         )}
 
         {showWelcome ? (
-          <WelcomeDisplay>
-            <WelcomeIcon>👋</WelcomeIcon>
-            <WelcomeTitle>歡迎光臨</WelcomeTitle>
-            <WelcomeSubtitle>我們很高興為您服務</WelcomeSubtitle>
-            <WelcomeTime>現在時間：{formatTime()}</WelcomeTime>
-          </WelcomeDisplay>
+          // <WelcomeDisplay>
+          //   <WelcomeIcon>👋</WelcomeIcon>
+          //   <WelcomeTitle>歡迎光臨</WelcomeTitle>
+          //   <WelcomeSubtitle>我們很高興為您服務</WelcomeSubtitle>
+          //   <WelcomeTime>現在時間：{formatTime()}</WelcomeTime>
+          // </WelcomeDisplay>
+          <BannerDisplay />
         ) : orderList.length > 0 && !currentOrder ? (
           <OrderListDisplay>
             <h2 style={{ marginBottom: '20px', color: '#d68910' }}>訂單列表</h2>

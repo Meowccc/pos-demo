@@ -99,10 +99,10 @@ function App() {
             首頁
           </NavButton>
           <NavButton onClick={() => window.location.href = basename + '/staff'}>
-            營業員
+            POS
           </NavButton>
           <NavButton onClick={() => window.location.href = basename + '/customer'}>
-            客戶
+            客顯器
           </NavButton>
         </Navigation>
 
@@ -110,13 +110,13 @@ function App() {
           <Route path="/" element={
             <HomePage>
               <HomeTitle>POS 雙顯示器系統</HomeTitle>
-              <HomeDescription>
+              {/* <HomeDescription>
                 歡迎使用雙顯示器 POS 系統<br/>
                 請選擇要開啟的顯示器類型
-              </HomeDescription>
+              </HomeDescription> */}
               <LinkContainer>
                 <StyledLink href={basename + '/staff'}>
-                  🖥️ 營業員操作介面
+                  🖥️ POS介面
                 </StyledLink>
                 <StyledLink href={basename + '/customer'}>
                   📺 客戶顯示器
@@ -127,14 +127,14 @@ function App() {
           
           <Route path="/staff" element={
             <>
-              <Title>營業員操作介面</Title>
+              <Title>POS介面</Title>
               <StaffDisplay />
             </>
           } />
           
           <Route path="/customer" element={
             <>
-              <Title>客戶顯示器</Title>
+              <Title>客顯器</Title>
               <CustomerDisplay />
             </>
           } />
