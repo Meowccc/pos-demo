@@ -89,7 +89,7 @@ const StyledLink = styled.a`
 
 function App() {
   // 根據環境設定 basename
-  const basename = process.env.NODE_ENV === 'production' ? '/' : '';
+  const basename = process.env.NODE_ENV === 'production' ? '' : '';
   
   return (
     <Router basename={basename}>
