@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import styled from 'styled-components';
 import StaffDisplay from './components/StaffDisplay';
 import CustomerDisplay from './components/CustomerDisplay';
@@ -90,18 +90,18 @@ const StyledLink = styled.a`
 function App() {
   // 根據環境設定 basename
   const basename = process.env.NODE_ENV === 'production' ? '' : '';
-  
+
   return (
-    <Router basename={basename}>
+    <Router>
       <AppContainer>
         <Navigation>
-          <NavButton onClick={() => window.location.href = basename + '/'}>
+          <NavButton onClick={() => window.location.hash = '#'}>
             首頁
           </NavButton>
-          <NavButton onClick={() => window.location.href = basename + '/staff'}>
+          <NavButton onClick={() => window.location.hash = '#/staff'}>
             POS
           </NavButton>
-          <NavButton onClick={() => window.location.href = basename + '/customer'}>
+          <NavButton onClick={() => window.location.hash = '#/customer'}>
             客顯器
           </NavButton>
         </Navigation>
@@ -110,35 +110,27 @@ function App() {
           <Route path="/" element={
             <HomePage>
               <HomeTitle>POS 雙顯示器系統</HomeTitle>
-              {/* <HomeDescription>
-                歡迎使用雙顯示器 POS 系統<br/>
-                請選擇要開啟的顯示器類型
-              </HomeDescription> */}
               <LinkContainer>
-                <StyledLink href={basename + '/staff'}>
-                  🖥️ POS介面
-                </StyledLink>
-                <StyledLink href={basename + '/customer'}>
-                  📺 客戶顯示器
-                </StyledLink>
+                <StyledLink href="#/staff">🖥️ POS介面</StyledLink>
+                <StyledLink href="#/customer">📺 客戶顯示器</StyledLink>
               </LinkContainer>
             </HomePage>
           } />
-          
+
           <Route path="/staff" element={
             <>
               <Title>POS介面</Title>
               <StaffDisplay />
             </>
           } />
-          
+
           <Route path="/customer" element={
             <>
               <Title>客顯器</Title>
               <CustomerDisplay />
             </>
           } />
-          
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppContainer>
